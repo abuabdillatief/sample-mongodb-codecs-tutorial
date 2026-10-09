@@ -17,7 +17,8 @@ func ConnectMongo() *mongo.Client {
 		SetConnectTimeout(time.Second * 60).
 		SetMaxPoolSize(uint64(100)).
 		SetMinPoolSize(10).
-		ApplyURI("mongodb://localhost:27017/sample")
+		ApplyURI("mongodb://localhost:27017/sample").
+		SetRegistry(CodecRegistry)
 
 	log.Println("test")
 
