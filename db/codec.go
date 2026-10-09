@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"reflect"
+	"time"
 
 	"github.com/abuabdillatief/sample/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,8 +15,8 @@ import (
 )
 
 var (
-	defaultKey = "secureencryptionkeynoonewillknow"
 	CodecRegistry *bsoncodec.Registry
+	defaultKey    = "secureencryptionkeynoonewillknow"
 )
 
 func init() {
@@ -23,11 +24,44 @@ func init() {
 }
 
 func setCodecRegistry(rb *bsoncodec.Registry) *bsoncodec.Registry {
+	// Register time.Time codec
+	rb.RegisterTypeEncoder(reflect.TypeOf(time.Time{}), &timeCodec{})
+	rb.RegisterTypeDecoder(reflect.TypeOf(time.Time{}), &timeCodec{})
+
 	// Register Passport codec
 	rb.RegisterTypeEncoder(reflect.TypeOf(models.Passport{}), &passportCodec{})
 	rb.RegisterTypeDecoder(reflect.TypeOf(models.Passport{}), &passportCodec{})
 
 	return rb
+}
+
+type timeCodec struct{}
+
+func (tc *timeCodec) EncodeValue(ectx bsoncodec.EncodeContext, vw bsonrw.ValueWriter, val reflect.Value) error {
+	if !val.IsValid() || val.IsZero() {
+		return vw.WriteNull()
+	}
+
+	t := val.Interface().(time.Time)
+	timestamp := t.Unix() // Convert to Unix timestamp
+
+	return vw.WriteInt64(timestamp)
+}
+
+func (tc *timeCodec) DecodeValue(dctx bsoncodec.DecodeContext, vr bsonrw.ValueReader, val reflect.Value) error {
+	if !val.CanSet() {
+		return errors.New("value must be settable")
+	}
+
+	timestamp, err := vr.ReadInt64()
+	if err != nil {
+		return err
+	}
+
+	t := time.Unix(timestamp, 0) // Convert Unix timestamp back to time.Time
+	val.Set(reflect.ValueOf(t))
+
+	return nil
 }
 
 type passportCodec struct{}
@@ -50,7 +84,7 @@ func (tc *passportCodec) EncodeValue(ectx bsoncodec.EncodeContext, vw bsonrw.Val
 		key = defaultKey
 	}
 
-	encrpyted, err := Encrypt(string(b), key) // here we encrypt the data using our previously declared function
+	encrpyted, err := Encrypt(string(b), key)
 	if err != nil {
 		log.Println("Failed to encrypt passport data", err)
 
@@ -77,7 +111,7 @@ func (tc *passportCodec) DecodeValue(dctx bsoncodec.DecodeContext, vr bsonrw.Val
 		key = defaultKey
 	}
 
-	decrypted, err := Decrypt(passportAsString, key) // here we decrypt the data using our previously declared function
+	decrypted, err := Decrypt(passportAsString, key)
 	if err != nil {
 		log.Println("Failed to decrypt passport data", err)
 		return err

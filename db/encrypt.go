@@ -10,7 +10,7 @@ import (
 	"io"
 )
 
-// Encrypt encrypts data using AES-GCM.
+// Encrypt encrypts PII data using AES-GCM.
 func Encrypt(plainText, key string) (string, error) {
 	// Convert the key to a 32-byte slice
 	keyBytes := []byte(key)
@@ -80,7 +80,7 @@ func Decrypt(cipherTextBase64, key string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to create GCM mode: %w", err)
 	}
-
+	
 	nonce, cipherText := data[:12], data[12:]
 
 	// Decrypt the ciphertext

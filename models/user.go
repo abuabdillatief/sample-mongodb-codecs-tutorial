@@ -1,18 +1,11 @@
 package models
 
-import (
-	"time"
-)
+import "time"
 
-type Passport struct {
-    Number string `bson:"number"`
-    ExpiredAt time.Time `bson:"expired_at"`
-}
-
+// User represents a simple user model
 type User struct {
-    ID          string `bson:"_id,omitempty"`
-    Name        string             `bson:"name"`
-    Email       string             `bson:"email"`
-    CreatedAt   time.Time          `bson:"created_at"`
-    Passport    Passport           `bson:"passport"`
+	ID        string    `json:"id" bson:"_id"`
+	Name      string    `json:"name" bson:"name"`
+	Age       int       `json:"age" bson:"age"`
+	CreatedAt time.Time `json:"createdAt" bson:"created_at"`
 }

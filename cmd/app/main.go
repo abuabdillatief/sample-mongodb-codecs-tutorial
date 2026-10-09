@@ -31,8 +31,8 @@ func main() {
 	http.HandleFunc("/users", handler.GetUsersHandler)
 	http.HandleFunc("/user", handler.CreateUserHandler)
 
-	log.Println("Server is running on http://localhost:8083")
-	if err := http.ListenAndServe(":8083", nil); err != nil {
+	log.Println("Server is running on http://localhost:8080")
+	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
 }
